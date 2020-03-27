@@ -52,11 +52,11 @@ Sagas are a framework the provide state tracking / orchestration logic for a bus
 
 | Feature | Durable Functions | MassTransit Sagas |
 | --- | --- | --- |
-| **Long Running Jobs** | Possible, but needs to run in a separate service | No separate service needed since the application<br>runs in containers |
+| **Long Running Jobs** | Possible, but needs to run in a separate service | No separate service needed since the application runs in containers |
 | **State tracking** | Built in event/instance logging in Azure Storage | Relies on persistent repository storage, such as SQL database |
-| **Scalability** | Scaling is built in, just need to create new<br>instances of orchestrator | Scaling is configurable by scaling number of containers |
+| **Scalability** | Scaling is built in, just need to create new instances of orchestrator | Scaling is configurable by scaling number of containers |
 | **Deployments** | Capable of CI/CD using Azure tools | Would take some more work to set up CI/DI, but it can be done with containers |
-| **Error Handling** | Built in to instance logging. Would need to<br>set up manual restart points | Errors will move messages to an error queue. Process could restart<br>by pushing to an input queue |
+| **Error Handling** | Built in to instance logging. Would need to set up manual restart points | Errors will move messages to an error queue. Process could restart by pushing to an input queue |
 
 ## Recommendation
 
