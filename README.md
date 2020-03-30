@@ -25,7 +25,7 @@ Sagas are a framework the provide state tracking / orchestration logic for a bus
         * Logging is configurable (we can easily hook into Seq) and would allow easily creating an audit trail
         * The initial orchestration trigger can return HTTP endpoints that can be used to monitor the job. These can be either built in APIs, or custom created
     * MassTransit Sagas
-        * Saga state is stored in the repository, which can be in SQL and would thus be queryable directly or accessible via API
+        * Saga state is stored in a repository, which can be in SQL and would thus be queryable directly or accessible via API
 3. Scalability
     * Durable Functions
         * Unlimited instances of orchestrator functions can be created, so the pipeline is easily scalable
@@ -40,13 +40,15 @@ Sagas are a framework the provide state tracking / orchestration logic for a bus
 5. Error Handling
     * Durable Functions
         * Exceptions in activity functions are passed back to parent orchestrator function and can be handled in either place
-        * Retry options are built in and configurable
+        * Retry options are configurable via a built in options class. If configured, retries happen automatically when an activity or sub-orchestration throw an exception
         * If the orchestrator function fails, it's logged in azure storage and marked as failed
         * Manual intervention would need to be built in to restart pipelines at certain points
     * MassTransit Sagas
-        * Retry options are built in and configurable
+        * Retries can happen in memory for transient errors (DB timeout, web service busy, etc.) or messages can be redelivered in the future when longer lasting errors (SQL server crashed, web service down, etc.) have been resolved
         * Failed messages are automatically moved to an error queue
         * Manual intervention would be moving messages to certain queues to restart processes
+6. Process Visibility
+    * For either solution, visibility into the process pipeline would require development of audit tracking in the database. Durable Functions has the advantage of automatically logging the status changes of each running job.
 
 ## Comparison
 
@@ -57,6 +59,7 @@ Sagas are a framework the provide state tracking / orchestration logic for a bus
 | **Scalability** | Scaling is built in, just need to create new instances of orchestrator | Scaling is configurable by scaling number of containers |
 | **Deployments** | Capable of CI/CD using Azure tools | Would take some more work to set up CI/DI, but it can be done with containers |
 | **Error Handling** | Built in to instance logging. Would need to set up manual restart points | Errors will move messages to an error queue. Process could restart by pushing to an input queue |
+| **Other Considerations** | | <ul><li>Queue messages have a defailt time to live of TimeSpan.Max, and if they do expire they would move to the dead letter queue</li></ul> |
 
 ## Recommendation
 
