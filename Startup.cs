@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using DurableFunctionPOC.Model;
 using System.Net.Http;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 [assembly: FunctionsStartup(typeof(MyNamespace.Startup))]
 
@@ -26,6 +29,27 @@ namespace MyNamespace
                 .Build();
 
             builder.Services.Configure<AppConfig>(configuration);
+            builder.Services.AddLogging(loggingBuilder =>
+            {
+                var logLevel = LogEventLevel.Debug;
+                var levelSwitch = new LoggingLevelSwitch(logLevel);
+                var logger = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .Enrich.WithProperty("System", "Durable Function POC System")
+                    .Enrich.WithProperty("Service", "Durable Function POC Service")
+                    .Enrich.WithProperty("Env", "local")
+                    .WriteTo.Seq(
+                        "http://localhost:5341",
+                        apiKey: "GOvgyWoisx87qAGy7vGY",
+                        controlLevelSwitch: levelSwitch,
+                        compact: true)
+                    .WriteTo.ColoredConsole()
+                    .MinimumLevel.ControlledBy(levelSwitch)
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                    .MinimumLevel.Override("System", LogEventLevel.Warning)
+                    .CreateLogger();
+                loggingBuilder.AddSerilog(logger);
+            });
         }
     }
 }
